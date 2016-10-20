@@ -10,8 +10,10 @@ public class MathQuestionScript : MonoBehaviour {
     public TextMesh answer;
     public Vector3 stopPos;
 
-    public GameObject explosion;
-    public GameObject confetti;
+    public GameObject greenDust;
+    public GameObject redDust;
+
+    bool shouldDestroy = false;
     // Use this for initialization
     void Start () {
         answer.text = "";
@@ -34,7 +36,7 @@ public class MathQuestionScript : MonoBehaviour {
     {
         float timer = 0f;
         float timePercent = 0f;
-        while(timer< 1.5f)
+        while(timer< 1.5f && !shouldDestroy)
         {
             timer += Time.deltaTime;
             timePercent = timer / 1.5f;
@@ -45,19 +47,28 @@ public class MathQuestionScript : MonoBehaviour {
     }
     public IEnumerator CorrectAnswer()
     {
-        Instantiate(confetti, transform.position, Quaternion.identity);
-        Destroy(gameObject);
+        yield return new WaitForSeconds(1f);
+        if (!shouldDestroy)
+        {
+            Instantiate(greenDust, transform.position, Quaternion.identity);
+            Destroy(gameObject);
+        }
         yield return null;
     }
     public IEnumerator WrongAnswer()
     {
-        Instantiate(explosion, transform.position, Quaternion.identity);
-        Destroy(gameObject);
+        yield return new WaitForSeconds(1f);
+        if (!shouldDestroy)
+        {
+            Instantiate(redDust, transform.position, Quaternion.identity);
+            Destroy(gameObject);
+        }
         yield return null;
     }
 
     public void Destroy()
     {
+        shouldDestroy = true;
         Destroy(this.gameObject);
     }
 }

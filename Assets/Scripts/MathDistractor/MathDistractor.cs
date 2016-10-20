@@ -102,6 +102,7 @@ public class MathDistractor : MonoBehaviour
             if(currentQuestion!=null)
             {
                 currentQuestion.GetComponent<MathQuestionScript>().Destroy();
+                currentQuestion = null;
             }
 			//mathGamifiedCanvas.SetActive (false);
 		}
@@ -151,11 +152,30 @@ public class MathDistractor : MonoBehaviour
         bool isAnswerCorrect = false;
         if(!Config.isGamified)
         {
-            isAnswerCorrect = (int.Parse(answer.text) == correctAnswer);
+            if (answer.text == "")
+            {
+                answer.text = "0";
+                isAnswerCorrect = false;
+            }
+            else
+            {
+                isAnswerCorrect = (int.Parse(answer.text) == correctAnswer);
+            }
         }
         else
         {
-            isAnswerCorrect = (int.Parse(currentQuestion.GetComponent<MathQuestionScript>().answer.text)== correctAnswer);
+            if (currentQuestion != null)
+            {
+                if (currentQuestion.GetComponent<MathQuestionScript>().answer.text == "")
+                {
+                    currentQuestion.GetComponent<MathQuestionScript>().answer.text = "0";
+                    isAnswerCorrect = false;
+                }
+                else
+                {
+                    isAnswerCorrect = (int.Parse(currentQuestion.GetComponent<MathQuestionScript>().answer.text) == correctAnswer);
+                }
+            }
         }
         if(isAnswerCorrect)
         {
@@ -166,8 +186,8 @@ public class MathDistractor : MonoBehaviour
             }
             else
             {
-
-                yield return StartCoroutine(currentQuestion.GetComponent<MathQuestionScript>().CorrectAnswer());
+                if(currentQuestion!=null)
+                    yield return StartCoroutine(currentQuestion.GetComponent<MathQuestionScript>().CorrectAnswer());
             }
         }
         else
@@ -179,8 +199,8 @@ public class MathDistractor : MonoBehaviour
             }
             else
             {
-
-               yield return StartCoroutine(currentQuestion.GetComponent<MathQuestionScript>().WrongAnswer());
+                if (currentQuestion != null)
+                    yield return StartCoroutine(currentQuestion.GetComponent<MathQuestionScript>().WrongAnswer());
             }
         }
         ResetAnswer();
@@ -243,8 +263,10 @@ public class MathDistractor : MonoBehaviour
 
 	void InstantiateMathBlock()
 	{
-        currentQuestion = Instantiate(mathQuestionPrefab, mathQuestionSpawnPos, Quaternion.identity) as GameObject;
-        currentQuestion.GetComponent<MathQuestionScript>().AssignNumbers(firstRandInt, secondRandInt, thirdRandInt);
+ 
+            currentQuestion = Instantiate(mathQuestionPrefab, mathQuestionSpawnPos, Quaternion.identity) as GameObject;
+        if(currentQuestion!=null)
+            currentQuestion.GetComponent<MathQuestionScript>().AssignNumbers(firstRandInt, secondRandInt, thirdRandInt);
     }
 
 	/// <summary>
@@ -268,7 +290,8 @@ public class MathDistractor : MonoBehaviour
                 {
                     GenerateNewMathProblem();
                     InstantiateMathBlock();
-                    yield return StartCoroutine(currentQuestion.GetComponent<MathQuestionScript>().ApproachCamera());
+                    if (currentQuestion != null)
+                        yield return StartCoroutine(currentQuestion.GetComponent<MathQuestionScript>().ApproachCamera());
                     shouldGenerateNewProblem = false;
                 }
                 if (Input.GetKeyDown(KeyCode.Return))
@@ -592,7 +615,8 @@ public class MathDistractor : MonoBehaviour
                 tempString = string.Concat(currentAnswer[0], currentAnswer[1]);
             else
                 tempString = currentAnswer[0];
-            currentQuestion.GetComponent<MathQuestionScript>().answer.text = tempString;
+            if (currentQuestion != null)
+                currentQuestion.GetComponent<MathQuestionScript>().answer.text = tempString;
         }
     }
     public IEnumerator RunMathDistractor()
