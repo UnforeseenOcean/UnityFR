@@ -132,22 +132,22 @@ public class TrialController : MonoBehaviour {
     }
     public IEnumerator RunTrial()
     {
-
+        //change environment
         exp.environmentController.ChangeEnvironment();
         trialLogTrack.Log(SceneController.Instance.GetTrialCount ());
         UnityEngine.Debug.Log("running trial");
         //run countdown
-    //    yield return StartCoroutine("PlayCountdown");
+        yield return StartCoroutine("PlayCountdown");
 		//run word orientation
-	//	yield return StartCoroutine("StartWordOrientation");
+		yield return StartCoroutine("StartWordOrientation");
         //run the word encoding phase
         yield return StartCoroutine("RunWordEncoding");
         //run math distractor phase
         yield return StartCoroutine("RunMathDistractor");
         //run retrieval orientation
-        //	yield return StartCoroutine("StartRetrievalOrientation");
+       	yield return StartCoroutine("StartRetrievalOrientation");
         //run recall phase
-        //     yield return StartCoroutine("RunRecall");
+        yield return StartCoroutine("RunRecall");
         yield return null;
     }
 }

@@ -13,7 +13,7 @@ public class EnvironmentController : MonoBehaviour {
     int tempVar = 0;
 	// Use this for initialization
 	void Start () {
-        MakeUniqueEnvironmentList();
+      //  MakeUniqueEnvironmentList();
 	}
 	
 	// Update is called once per frame
@@ -32,8 +32,29 @@ public class EnvironmentController : MonoBehaviour {
         currentSkybox++;
     }
 
+    public IEnumerator CleanupEnvironments()
+    {
+        while(shufflerList.Count>0)
+        {
+            shufflerList.RemoveAt(shufflerList.Count - 1);
+            yield return 0;
+        }
+        Debug.Log("Shuffler has :" + shufflerList.Count);
+        while(currentListSkybox.Count>0)
+        {
+            currentListSkybox.RemoveAt(currentListSkybox.Count - 1);
+            yield return 0;
+        }
+
+        Debug.Log("skybox list now has : " + currentListSkybox.Count);
+
+        yield return null;
+    }
+
     public void MakeUniqueEnvironmentList()
     {
+        //reset tempvar
+        tempVar = 0;
 
         //store all available skyboxes in a temporary shuffle list
         for (int i = 0; i < skyboxMaterials.Length; i++)
@@ -41,24 +62,26 @@ public class EnvironmentController : MonoBehaviour {
             shufflerList.Add(skyboxMaterials[i]);
         }
 
+        Debug.Log("Shuffler has :" + shufflerList.Count);
         //randomly shuffle them around
-        for(int j=0;j<10;j++)
+        for (int j=0;j<skyboxMaterials.Length;j++)
         {
             int randInt = Random.Range(0, shufflerList.Count);
             currentListSkybox.Add(shufflerList[randInt]);
             shufflerList.RemoveAt(randInt);
         }
+
+        Debug.Log("skybox list now has : " + currentListSkybox.Count);
     }
     
     public void ChangeEnvironment()
     {
-        tempVar++;
-        if(tempVar % 3==0)
-        //if(SceneController.Instance.trialCount % 3 == 0)
+        if(SceneController.Instance.trialCount % 3 == 0 || SceneController.Instance.trialCount==0)
         {
             ChangeSkybox();
         }
         ChangeEnvironmentType();
+        tempVar++;
     }
 
     void DisableOldEnvironment(int oldEnviroment)
@@ -85,7 +108,7 @@ public class EnvironmentController : MonoBehaviour {
     {
         //increment the skybox value
         currentSkybox++;
-
+        Debug.Log("current skybox is : " + currentSkybox);
         //then update it
         if(currentSkybox< currentListSkybox.Count)
         {

@@ -62,17 +62,25 @@ public class SceneController : MonoBehaviour { //there can be a separate scene c
 
 		//do mic test
 
-		//generate word list
+		//generate word list for PRACTICE
 		yield return StartCoroutine(WordListGenerator.Instance.GenerateWordList());
-
-		//reset the trial just in case
-		ResetTrials();
+        //first generate a unique environment list for PRACTICE 
+        Experiment.Instance.environmentController.MakeUniqueEnvironmentList();
+        //reset the trial just in case
+        ResetTrials();
 		//do practice test
 		ExperimentSettings.practice=true;
 		yield return StartCoroutine(TrialController.Instance.RunTrial());
 		ExperimentSettings.practice = false;
-		//regenerate the word list again
-		yield return StartCoroutine(WordListGenerator.Instance.GenerateWordList());
+        //cleanup environments first
+        yield return StartCoroutine(Experiment.Instance.environmentController.CleanupEnvironments());
+        //reset
+        ResetTrials();
+
+        //regenerate a unique environment list
+        Experiment.Instance.environmentController.MakeUniqueEnvironmentList();
+        //regenerate the word list again
+        yield return StartCoroutine(WordListGenerator.Instance.GenerateWordList());
 		while (trialCount < 25)
 		{
 			IncrementTrial ();
@@ -84,7 +92,9 @@ public class SceneController : MonoBehaviour { //there can be a separate scene c
 				Debug.Log("there is no trial controller");
 			yield return 0;
 		}
-		yield return null;
+
+        //cleanup environment list
+        yield return null;
 	}
 
 

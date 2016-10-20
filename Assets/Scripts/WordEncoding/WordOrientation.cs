@@ -3,6 +3,7 @@ using System.Collections;
 
 public class WordOrientation : MonoBehaviour {
 
+    public Vector3 startPos;
 	public WordOrientationLogTrack wordOrientationLogTrack;
 	public GameObject orientationObject;
 	public GameObject retrievalOrientationObject;
@@ -46,8 +47,9 @@ public class WordOrientation : MonoBehaviour {
 	public IEnumerator InitiateOrientation()
 	{
 		orientationObject.SetActive(true);
-		yield return new WaitForSeconds(2.6f);
+		yield return new WaitForSeconds(2.4f);
 		orientationObject.SetActive(false);
-		yield return null;
+        orientationObject.transform.GetChild(0).transform.localPosition = Vector3.zero;
+        yield return null;
 	}
 }

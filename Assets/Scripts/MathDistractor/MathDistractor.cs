@@ -87,9 +87,10 @@ public class MathDistractor : MonoBehaviour
 			StartCoroutine ("ResetLights");
 			mathGamifiedCanvas.SetActive (false);
 		} else {
-			//mathGamifiedCanvas.SetActive (true);
-			//mainSegments.SetActive (true);
-			mathCanvas.SetActive (false);
+            //mathGamifiedCanvas.SetActive (true);
+            //mainSegments.SetActive (true);
+            ResetAnswer();
+            mathCanvas.SetActive (false);
 		}
 	}
 

@@ -47,20 +47,20 @@ public class MathQuestionScript : MonoBehaviour {
     }
     public IEnumerator CorrectAnswer()
     {
-        yield return new WaitForSeconds(1f);
         if (!shouldDestroy)
         {
             Instantiate(greenDust, transform.position, Quaternion.identity);
+            yield return new WaitForSeconds(1.5f);
             Destroy(gameObject);
         }
         yield return null;
     }
     public IEnumerator WrongAnswer()
     {
-        yield return new WaitForSeconds(1f);
         if (!shouldDestroy)
         {
             Instantiate(redDust, transform.position, Quaternion.identity);
+            yield return new WaitForSeconds(1.5f);
             Destroy(gameObject);
         }
         yield return null;
