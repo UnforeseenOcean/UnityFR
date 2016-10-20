@@ -370,6 +370,94 @@ public class MathDistractor : MonoBehaviour
 		yield return null;
 	}
 
+    void ResetMathBlock()
+    {
+        Debug.Log("resetting math block");
+        questionTarget.localPosition = mathBlockSpawnPos;
+    }
+
+    void DeleteDigit()
+    {
+        switch (answerIndex)
+        {
+            case -1:
+                answerIndex = -1;
+                break;
+            case 0:
+                currentAnswer[0] = "";
+                answerIndex = -1;
+                break;
+            case 1:
+                currentAnswer[1] = "";
+                answerIndex = 0;
+                break;
+            case 2:
+                currentAnswer[1] = "";
+                answerIndex = 0;
+                break;
+        }
+        DisplayCurrentAnswer();
+    }
+
+    void AppendToAnswer(string digit)
+    {
+        switch (answerIndex)
+        {
+            case -1:
+                answerIndex = 0;
+                currentAnswer[answerIndex] = digit;
+                answerIndex++;
+                break;
+            case 0:
+                currentAnswer[0] = digit;
+                answerIndex++;
+                break;
+            case 1:
+                currentAnswer[1] = digit;
+                answerIndex = 2;
+                break;
+            case 2:
+                answerIndex = 2;
+                break;
+
+        }
+
+        DisplayCurrentAnswer();
+
+    }
+    void DisplayCurrentAnswer()
+    {
+        string tempString = "";
+        if (!Config.isGamified)
+        {
+            if (answerIndex >= 1)
+                tempString = string.Concat(currentAnswer[0], currentAnswer[1]);
+            else
+                tempString = currentAnswer[0];
+
+            answer.text = tempString;
+        }
+        else
+        {
+
+            if (answerIndex >= 1)
+                tempString = string.Concat(currentAnswer[0], currentAnswer[1]);
+            else
+                tempString = currentAnswer[0];
+            if (currentQuestion != null)
+                currentQuestion.GetComponent<MathQuestionScript>().answer.text = tempString;
+        }
+    }
+    public IEnumerator RunMathDistractor()
+    {
+        allowMathDistractor = true;
+        StartCoroutine("DisplayMathProblems");
+        yield return new WaitForSeconds(20f);
+        allowMathDistractor = false;
+        yield return null;
+    }
+    /*
+
 	IEnumerator ShiftLeft()
 	{
 		Debug.Log ("shifting left");
@@ -543,89 +631,5 @@ public class MathDistractor : MonoBehaviour
 
 		yield return null;
 	}
-
-	void ResetMathBlock()
-	{
-		Debug.Log ("resetting math block");
-		questionTarget.localPosition= mathBlockSpawnPos;
-	}
-
-    void DeleteDigit()
-    {
-		switch (answerIndex) {
-		case -1:
-			answerIndex = -1;
-			break;
-		case 0:
-			currentAnswer [0] = "";
-			answerIndex = -1;
-			break;
-		case 1:
-			currentAnswer [1] = "";
-			answerIndex = 0;
-			break;
-		case 2:
-			currentAnswer [1] = "";
-			answerIndex = 0;
-			break;
-		}
-        DisplayCurrentAnswer();
-    }
-
-    void AppendToAnswer(string digit)
-    {
-		switch (answerIndex) {
-		case -1:
-			answerIndex = 0;
-			currentAnswer [answerIndex] = digit;
-			answerIndex++;
-			break;
-		case 0:
-			currentAnswer [0] = digit;
-			answerIndex++;
-			break;
-		case 1:
-			currentAnswer [1] = digit;
-			answerIndex=2;
-			break;
-		case 2:
-			answerIndex = 2;
-			break;
-			
-		}
-     
-        DisplayCurrentAnswer();
-            
-    }
-    void DisplayCurrentAnswer()
-    {
-        string tempString = "";
-        if (!Config.isGamified)
-        {
-            if (answerIndex >= 1)
-                tempString = string.Concat(currentAnswer[0], currentAnswer[1]);
-            else
-                tempString = currentAnswer[0];
-
-            answer.text = tempString;
-        }
-        else
-        {
-
-            if (answerIndex >= 1)
-                tempString = string.Concat(currentAnswer[0], currentAnswer[1]);
-            else
-                tempString = currentAnswer[0];
-            if (currentQuestion != null)
-                currentQuestion.GetComponent<MathQuestionScript>().answer.text = tempString;
-        }
-    }
-    public IEnumerator RunMathDistractor()
-    {
-        allowMathDistractor = true;
-        StartCoroutine("DisplayMathProblems");
-        yield return new WaitForSeconds(20f);
-        allowMathDistractor = false;
-        yield return null;
-    }
+    */
 }
