@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using System.Collections.Generic;
 public class MathDistractor : MonoBehaviour
 {
 
@@ -9,6 +10,16 @@ public class MathDistractor : MonoBehaviour
     public Text number2;
     public Text number3;
 	public Text answer;
+
+	//for final prototype
+	public List<int> numbers;
+	public List<GameObject> numberPrefabs;
+	public GameObject questionTemplate;
+	public Vector3 questionSpawnPos;
+	private GameObject currentQuestion;
+	private bool answerKeyPressed = false;
+	private int answeredInt=0;
+
 
 	//FOR gamified prototype
 	public Text protonumber1;
@@ -39,9 +50,11 @@ public class MathDistractor : MonoBehaviour
 	public Vector3 mathBlockSpawnPos;
     public Vector3 finalPos;
 
+
+
+
     //for 3d math distractor
     public Vector3 mathQuestionSpawnPos;
-    GameObject currentQuestion;
     public GameObject mathQuestionPrefab;
 
     private string selectedDirection="";
@@ -67,7 +80,6 @@ public class MathDistractor : MonoBehaviour
 
     void Awake()
     {
-		
 		originalSegmentPosition = mainSegments.transform.localPosition;
         if (_instance != null)
         {
@@ -80,47 +92,65 @@ public class MathDistractor : MonoBehaviour
 	public void EnableCamera()
 	{
 		gameObject.GetComponent<Camera>().enabled = true;
-		if (!Config.isGamified) {
-			mathCanvas.SetActive (true);
-			mainSegments.SetActive (false);
-            ResetAnswer();
-			StartCoroutine ("ResetLights");
-			mathGamifiedCanvas.SetActive (false);
-		} else {
-            //mathGamifiedCanvas.SetActive (true);
-            //mainSegments.SetActive (true);
-            ResetAnswer();
-            mathCanvas.SetActive (false);
-		}
 	}
 
 	public void DisableCamera()
 	{
 		gameObject.GetComponent<Camera>().enabled = false;
-		if (!Config.isGamified) {
-			mathCanvas.SetActive (false);
-		} else {
             if(currentQuestion!=null)
             {
                 currentQuestion.GetComponent<MathQuestionScript>().Destroy();
                 currentQuestion = null;
+			answeredInt = 0;
+			firstRandInt = 0;
+			secondRandInt = 0;
             }
-			//mathGamifiedCanvas.SetActive (false);
-		}
 	}
     
+	void ReplenishNumberList()
+	{
+		//first clean up the list
+		if(numbers.Count>0)
+		{
+			for (int i = 0; i < numbers.Count; i++) {
+				numbers.RemoveAt (numbers.Count-1);
+		}
+		}
+
+		//then fill it up with standard 1-9 numbers
+		for (int j = 0; j < 9; j++) {
+			numbers.Add (j);
+		}
+	}
     void GenerateNewMathProblem()
     {
-        firstRandInt = Random.Range(0, 10);
-        secondRandInt = Random.Range(0, 10);
-        thirdRandInt = Random.Range(0, 10);
-		correctAnswer = firstRandInt + secondRandInt + thirdRandInt;
-			Debug.Log ("NOT GAMIFIED");
-			number1.text = firstRandInt.ToString ();
-			number2.text = secondRandInt.ToString ();
-			number3.text = thirdRandInt.ToString ();
-        shouldGenerateNewProblem = false;
+		int firstRandIndex = Random.Range (0, numbers.Count-1);
+		firstRandInt = numbers[firstRandIndex];
+		numbers.RemoveAt (firstRandIndex);
+		int secondRandIndex = Random.Range (0,numbers.Count - 1);
+		secondRandInt = numbers [secondRandIndex];
+		numbers.RemoveAt (secondRandIndex);
+		correctAnswer = firstRandInt + secondRandInt;
+
+		//should spawn relevant numbers
+		SpawnNumbers(firstRandIndex,secondRandIndex);
+
+		shouldGenerateNewProblem = false;
     }
+
+	void SpawnNumbers(int firstRand, int secondRand)
+	{
+		currentQuestion = Instantiate (questionTemplate, questionSpawnPos, Quaternion.identity) as GameObject;
+		Vector3 firstNumPos = currentQuestion.transform.GetChild (0).position;
+		Vector3 secondNumPos = currentQuestion.transform.GetChild (1).position;
+		Vector3 firstNumAngle = currentQuestion.transform.GetChild (0).localEulerAngles;
+		Vector3 secondNumAngle = currentQuestion.transform.GetChild (1).localEulerAngles;
+		GameObject firstNumber = Instantiate (numberPrefabs [firstRand], firstNumPos, Quaternion.Euler(firstNumAngle)) as GameObject;
+		firstNumber.transform.parent = currentQuestion.transform;
+		GameObject secondNumber = Instantiate (numberPrefabs [secondRand], secondNumPos, Quaternion.Euler(secondNumAngle)) as GameObject;
+		firstNumber.transform.parent = currentQuestion.transform;
+		secondNumber.transform.parent = currentQuestion.transform;
+	}
 
 	void AssignAnswerOptions()
 	{
@@ -149,85 +179,20 @@ public class MathDistractor : MonoBehaviour
 
     IEnumerator CheckAnswers()
     {
-        correctAnswer = firstRandInt + secondRandInt + thirdRandInt;
-        bool isAnswerCorrect = false;
-        if(!Config.isGamified)
-        {
-            if (answer.text == "")
-            {
-                answer.text = "0";
-                isAnswerCorrect = false;
-            }
-            else
-            {
-                isAnswerCorrect = (int.Parse(answer.text) == correctAnswer);
-            }
-        }
-        else
-        {
-            if (currentQuestion != null)
-            {
-                if (currentQuestion.GetComponent<MathQuestionScript>().answer.text == "")
-                {
-                    currentQuestion.GetComponent<MathQuestionScript>().answer.text = "0";
-                    isAnswerCorrect = false;
-                }
-                else
-                {
-                    isAnswerCorrect = (int.Parse(currentQuestion.GetComponent<MathQuestionScript>().answer.text) == correctAnswer);
-                }
-            }
-        }
-        if(isAnswerCorrect)
-        {
-            Debug.Log("CORRECT ANSWER");
-            if(!Config.isGamified)
-            {
-                
-            }
-            else
-            {
-                if(currentQuestion!=null)
-                    yield return StartCoroutine(currentQuestion.GetComponent<MathQuestionScript>().CorrectAnswer());
-            }
-        }
-        else
-        {
-            Debug.Log("WRONG ANSWER");
-            if (!Config.isGamified)
-            {
+        correctAnswer = firstRandInt + secondRandInt;
+		if (answeredInt == correctAnswer) {
+			yield return StartCoroutine (currentQuestion.GetComponent<MathQuestionScript> ().CorrectAnswer ());
+		} else {
+			yield return StartCoroutine(currentQuestion.GetComponent<MathQuestionScript> ().WrongAnswer ());
+		}
 
-            }
-            else
-            {
-                if (currentQuestion != null)
-                    yield return StartCoroutine(currentQuestion.GetComponent<MathQuestionScript>().WrongAnswer());
-            }
-        }
-        ResetAnswer();
         yield return null;
     }
-    void ResetAnswer()
-    {
-        if (!Config.isGamified)
-        {
-            answer.text = "";
-            currentAnswer[0] = "";
-            currentAnswer[1] = "";
-            answerIndex = 0;
-        }
-        else
-        {
-            currentAnswer[0] = "";
-            currentAnswer[1] = "";
-            answerIndex = 0;
 
-        }
-
-        }
     // Use this for initialization
     void Start()
 	{
+		ReplenishNumberList ();
 			currentAnswer [0] = "";
 			currentAnswer [1] = "";
 			answerIndex = 0;
@@ -236,32 +201,45 @@ public class MathDistractor : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-			if (Input.GetKeyDown (KeyCode.Alpha0)) {
-				AppendToAnswer ("0");
-			} else if (Input.GetKeyDown (KeyCode.Alpha1)) {
-				AppendToAnswer ("1");
-			} else if (Input.GetKeyDown (KeyCode.Alpha2)) {
-				AppendToAnswer ("2");
-			} else if (Input.GetKeyDown (KeyCode.Alpha3)) {
-				AppendToAnswer ("3");
-			} else if (Input.GetKeyDown (KeyCode.Alpha4)) {
-				AppendToAnswer ("4");
-			} else if (Input.GetKeyDown (KeyCode.Alpha5)) {
-				AppendToAnswer ("5");
-			} else if (Input.GetKeyDown (KeyCode.Alpha6)) {
-				AppendToAnswer ("6");
-			} else if (Input.GetKeyDown (KeyCode.Alpha7)) {
-				AppendToAnswer ("7");
-			} else if (Input.GetKeyDown (KeyCode.Alpha8)) {
-				AppendToAnswer ("8");
-			} else if (Input.GetKeyDown (KeyCode.Alpha9)) {
-				AppendToAnswer ("9");
-			} else if (Input.GetKeyDown (KeyCode.Backspace)) {
-				DeleteDigit ();
-			}
+		if (Input.GetKeyDown (KeyCode.Alpha0)) {
+			CreateAnswer (0);
+		} else if (Input.GetKeyDown (KeyCode.Alpha1)) {
+			CreateAnswer (1);
+		} else if (Input.GetKeyDown (KeyCode.Alpha2)) {
+			CreateAnswer (2);
+		} else if (Input.GetKeyDown (KeyCode.Alpha3)) {
+			CreateAnswer (3);
+		} else if (Input.GetKeyDown (KeyCode.Alpha4)) {
+			CreateAnswer (4);
+		} else if (Input.GetKeyDown (KeyCode.Alpha5)) {
+			CreateAnswer (5);
+		} else if (Input.GetKeyDown (KeyCode.Alpha6)) {
+			CreateAnswer (6);
+		} else if (Input.GetKeyDown (KeyCode.Alpha7)) {
+			CreateAnswer (7);
+		} else if (Input.GetKeyDown (KeyCode.Alpha8)) {
+			CreateAnswer (8);
+		} else if (Input.GetKeyDown (KeyCode.Alpha9)) {
+			CreateAnswer (9);
+		}
     }
 
+	void CreateAnswer(int answer)
+	{
+		answerKeyPressed = true;
+		answeredInt = answer;
+		if(currentQuestion!=null)
+		{
+			Vector3 answerPos = currentQuestion.transform.GetChild (2).position;
+			Vector3 answerAngle = currentQuestion.transform.GetChild (2).localEulerAngles;
+			GameObject answerObj = Instantiate (numberPrefabs [answer - 1], answerPos, Quaternion.Euler (answerAngle)) as GameObject;
+			answerObj.transform.parent = currentQuestion.transform;
+			currentQuestion.GetComponent<MathQuestionScript> ().BeyondCamera ();
 
+		}
+	}
+
+	/*
 	void InstantiateMathBlock()
 	{
  
@@ -269,46 +247,45 @@ public class MathDistractor : MonoBehaviour
         if(currentQuestion!=null)
             currentQuestion.GetComponent<MathQuestionScript>().AssignNumbers(firstRandInt, secondRandInt, thirdRandInt);
     }
+*/
 
 	/// <summary>
 	/// MAIN LOGIC OF THE MATH DISTRACTOR
 	/// </summary>
 	/// <returns>The math problems.</returns>
+	/// 
+	public IEnumerator RunMathDistractor()
+	{
+		allowMathDistractor = true;
+		StartCoroutine("DisplayMathProblems");
+		yield return new WaitForSeconds(20f);
+		allowMathDistractor = false;
+		yield return null;
+	}
+
 	IEnumerator DisplayMathProblems()
 	{
 		shouldGenerateNewProblem = true;
 		while(allowMathDistractor)
 		{
-			if (!Config.isGamified) {
-				if (shouldGenerateNewProblem)
-					GenerateNewMathProblem ();
-				if (Input.GetKeyDown (KeyCode.Return)) {
-					yield return StartCoroutine("CheckAnswers");
-					shouldGenerateNewProblem = true;
-				}
-			} else {
                 if (shouldGenerateNewProblem)
                 {
                     GenerateNewMathProblem();
-                    InstantiateMathBlock();
-                    if (currentQuestion != null)
+//                    InstantiateMathBlock();
+                   if (currentQuestion != null)
                         yield return StartCoroutine(currentQuestion.GetComponent<MathQuestionScript>().ApproachCamera());
                     shouldGenerateNewProblem = false;
                 }
-                if (Input.GetKeyDown(KeyCode.Return))
+			if (answerKeyPressed)
                 {
                     yield return StartCoroutine("CheckAnswers");
                     shouldGenerateNewProblem = true;
+				answerKeyPressed = false;
                 }
-                //ResetMathBlock ();
-                //yield return StartCoroutine ("ApproachQuestion");
-                //segments.GetComponent<Animator> ().enabled = false;
-                //yield return StartCoroutine ("WaitForSubmit");
-                //shouldGenerateNewProblem = true;
 
-            }
 			yield return 0;
-		}
+            }
+
 		yield return null;
 	}
 
@@ -369,7 +346,7 @@ public class MathDistractor : MonoBehaviour
 		}
 		yield return null;
 	}
-
+	/*
     void ResetMathBlock()
     {
         Debug.Log("resetting math block");
@@ -448,14 +425,8 @@ public class MathDistractor : MonoBehaviour
                 currentQuestion.GetComponent<MathQuestionScript>().answer.text = tempString;
         }
     }
-    public IEnumerator RunMathDistractor()
-    {
-        allowMathDistractor = true;
-        StartCoroutine("DisplayMathProblems");
-        yield return new WaitForSeconds(20f);
-        allowMathDistractor = false;
-        yield return null;
-    }
+    */
+
     /*
 
 	IEnumerator ShiftLeft()
