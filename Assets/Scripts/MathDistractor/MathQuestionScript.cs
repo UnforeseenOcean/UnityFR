@@ -9,6 +9,9 @@ public class MathQuestionScript : MonoBehaviour {
     public GameObject greenDust;
     public GameObject redDust;
 
+	public Material greenMat;
+	public Material redMat;
+
     bool shouldDestroy = false;
     // Use this for initialization
     void Start () {
@@ -35,24 +38,27 @@ public class MathQuestionScript : MonoBehaviour {
 
 	public IEnumerator BeyondCamera()
 	{
+		Debug.Log ("trying to go beyond camera");
 		float timer = 0f;
 		float timePercent = 0f;
-		while(timer< 1f && !shouldDestroy)
+		while(timer< 1f)
 		{
 			timer += Time.deltaTime;
 			timePercent = timer / 1f;
 			transform.position = Vector3.Lerp(transform.position, beyondPos, timePercent);
 			yield return 0;
 		}
+		Destroy ();
 		yield return null;
 	}
     public IEnumerator CorrectAnswer()
     {
         if (!shouldDestroy)
         {
-            Instantiate(greenDust, transform.position, Quaternion.identity);
-            yield return new WaitForSeconds(1.5f);
-            Destroy(gameObject);
+			ChangeMaterial (0);
+			yield return new WaitForSeconds(0.75f);
+			StartCoroutine ("BeyondCamera");
+         //   Destroy(gameObject);
         }
         yield return null;
     }
@@ -60,12 +66,26 @@ public class MathQuestionScript : MonoBehaviour {
     {
         if (!shouldDestroy)
         {
-            Instantiate(redDust, transform.position, Quaternion.identity);
-            yield return new WaitForSeconds(1.5f);
-            Destroy(gameObject);
+			ChangeMaterial (1);
+			yield return new WaitForSeconds(0.75f);
+			StartCoroutine ("BeyondCamera");
+         //   Destroy(gameObject);
         }
         yield return null;
     }
+
+	void ChangeMaterial(int answerStatus) //0 for correct, 1 for wrong
+	{
+		if (answerStatus == 0) {
+			for (int i = 3; i <= 7; i++) {
+				transform.GetChild (i).GetChild(0).GetChild(1).GetComponent<Renderer> ().material = greenMat;
+			}
+		} else {
+			for (int i = 3; i <= 7; i++) {
+				transform.GetChild (i).GetChild(0).GetChild(1).GetComponent<Renderer> ().material = redMat;
+			}
+		}
+	}
 
     public void Destroy()
     {

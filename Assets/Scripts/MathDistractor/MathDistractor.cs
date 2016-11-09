@@ -107,29 +107,34 @@ public class MathDistractor : MonoBehaviour
             }
 	}
     
-	void ReplenishNumberList()
+	IEnumerator ReplenishNumberList()
 	{
 		//first clean up the list
 		if(numbers.Count>0)
 		{
-			for (int i = 0; i < numbers.Count; i++) {
-				numbers.RemoveAt (numbers.Count-1);
+			numbers.RemoveRange (0, numbers.Count);
 		}
-		}
+	//	Debug.Log ("there are : " + numbers.Count + " objects left");
 
-		//then fill it up with standard 1-9 numbers
-		for (int j = 0; j < 9; j++) {
+		//then fill it up with standard 1-8 numbers
+		for (int j = 1; j<= 8; j++) {
+			//Debug.Log ("NOW " + j);
 			numbers.Add (j);
 		}
+		yield return null;
 	}
     void GenerateNewMathProblem()
     {
 		int firstRandIndex = Random.Range (0, numbers.Count-1);
 		firstRandInt = numbers[firstRandIndex];
-		numbers.RemoveAt (firstRandIndex);
-		int secondRandIndex = Random.Range (0,numbers.Count - 1);
+		//Debug.Log ("removing " + firstRandInt + " at index " + firstRandIndex);
+		int upperLimit = 10 - firstRandInt;
+		//Debug.Log ("upper limit: " + upperLimit);
+		int secondRandIndex = Random.Range (0,upperLimit-1);
 		secondRandInt = numbers [secondRandIndex];
+		numbers.RemoveAt (firstRandIndex);
 		numbers.RemoveAt (secondRandIndex);
+		//Debug.Log ("removing " + secondRandInt + " at index " + secondRandIndex);
 		correctAnswer = firstRandInt + secondRandInt;
 
 		//should spawn relevant numbers
@@ -179,7 +184,9 @@ public class MathDistractor : MonoBehaviour
 
     IEnumerator CheckAnswers()
     {
+		//Debug.Log(firstRandInt + " and " + secondRandInt);
         correctAnswer = firstRandInt + secondRandInt;
+		//Debug.Log ("correct answer: " + correctAnswer);
 		if (answeredInt == correctAnswer) {
 			yield return StartCoroutine (currentQuestion.GetComponent<MathQuestionScript> ().CorrectAnswer ());
 		} else {
@@ -201,40 +208,42 @@ public class MathDistractor : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-		if (Input.GetKeyDown (KeyCode.Alpha0)) {
-			CreateAnswer (0);
-		} else if (Input.GetKeyDown (KeyCode.Alpha1)) {
-			CreateAnswer (1);
-		} else if (Input.GetKeyDown (KeyCode.Alpha2)) {
-			CreateAnswer (2);
-		} else if (Input.GetKeyDown (KeyCode.Alpha3)) {
-			CreateAnswer (3);
-		} else if (Input.GetKeyDown (KeyCode.Alpha4)) {
-			CreateAnswer (4);
-		} else if (Input.GetKeyDown (KeyCode.Alpha5)) {
-			CreateAnswer (5);
-		} else if (Input.GetKeyDown (KeyCode.Alpha6)) {
-			CreateAnswer (6);
-		} else if (Input.GetKeyDown (KeyCode.Alpha7)) {
-			CreateAnswer (7);
-		} else if (Input.GetKeyDown (KeyCode.Alpha8)) {
-			CreateAnswer (8);
-		} else if (Input.GetKeyDown (KeyCode.Alpha9)) {
-			CreateAnswer (9);
+		if (!answerKeyPressed) {
+			if (Input.GetKeyDown (KeyCode.Alpha0)) {
+				CreateAnswer (0);
+			} else if (Input.GetKeyDown (KeyCode.Alpha1)) {
+				CreateAnswer (1);
+			} else if (Input.GetKeyDown (KeyCode.Alpha2)) {
+				CreateAnswer (2);
+			} else if (Input.GetKeyDown (KeyCode.Alpha3)) {
+				CreateAnswer (3);
+			} else if (Input.GetKeyDown (KeyCode.Alpha4)) {
+				CreateAnswer (4);
+			} else if (Input.GetKeyDown (KeyCode.Alpha5)) {
+				CreateAnswer (5);
+			} else if (Input.GetKeyDown (KeyCode.Alpha6)) {
+				CreateAnswer (6);
+			} else if (Input.GetKeyDown (KeyCode.Alpha7)) {
+				CreateAnswer (7);
+			} else if (Input.GetKeyDown (KeyCode.Alpha8)) {
+				CreateAnswer (8);
+			} else if (Input.GetKeyDown (KeyCode.Alpha9)) {
+				CreateAnswer (9);
+			}
 		}
     }
 
 	void CreateAnswer(int answer)
 	{
-		answerKeyPressed = true;
 		answeredInt = answer;
+		answerKeyPressed = true;
 		if(currentQuestion!=null)
 		{
 			Vector3 answerPos = currentQuestion.transform.GetChild (2).position;
 			Vector3 answerAngle = currentQuestion.transform.GetChild (2).localEulerAngles;
 			GameObject answerObj = Instantiate (numberPrefabs [answer - 1], answerPos, Quaternion.Euler (answerAngle)) as GameObject;
 			answerObj.transform.parent = currentQuestion.transform;
-			currentQuestion.GetComponent<MathQuestionScript> ().BeyondCamera ();
+			//StartCoroutine(currentQuestion.GetComponent<MathQuestionScript> ().BeyondCamera ());
 
 		}
 	}
@@ -269,7 +278,8 @@ public class MathDistractor : MonoBehaviour
 		while(allowMathDistractor)
 		{
                 if (shouldGenerateNewProblem)
-                {
+			{		
+				yield return StartCoroutine("ReplenishNumberList");
                     GenerateNewMathProblem();
 //                    InstantiateMathBlock();
                    if (currentQuestion != null)
