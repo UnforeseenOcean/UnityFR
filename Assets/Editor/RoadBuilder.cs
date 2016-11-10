@@ -39,15 +39,19 @@ public class RoadBuilder : EditorWindow
     {
         for (int i = 0; i < count; i++)
         {
+			//for other objects
+			/*
             Instantiate(parentObject, refVector + new Vector3(posX, posY, (posZ * i)), Quaternion.identity);
 
             Instantiate(parentObject, refVector + new Vector3(posX+33.2f, posY, (posZ * i)), Quaternion.identity);
-
-            /* for trees
-            Instantiate(parentObject, refVector + new Vector3(posX+Random.Range(0f,17f),posY,(posZ* i)+Random.Range(0f,17f)), Quaternion.identity);
-
-            Instantiate(parentObject, refVector + new Vector3(-posX-Random.Range(0f,17f), posY, (posZ * i)-Random.Range(0f,17f)), Quaternion.identity);
-            */
+			*/
+            //for trees
+			Vector2 randVect=Random.insideUnitCircle*15f;
+			if(randVect.x <= 0)
+			Instantiate(parentObject, refVector + new Vector3(-posX+randVect.x,posY,(posZ *i)+randVect.y), Quaternion.identity);
+			else
+			Instantiate(parentObject, refVector + new Vector3(posX+randVect.x,posY,(posZ *i)-randVect.y), Quaternion.identity);
+            
         }
     }
 

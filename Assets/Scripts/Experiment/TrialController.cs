@@ -141,11 +141,11 @@ public class TrialController : MonoBehaviour {
 		//run word orientation
 	//	yield return StartCoroutine("StartWordOrientation");
         //run the word encoding phase
-       // yield return StartCoroutine("RunWordEncoding");
+        yield return StartCoroutine("RunWordEncoding");
         //run math distractor phase
-        yield return StartCoroutine("RunMathDistractor");
+      //  yield return StartCoroutine("RunMathDistractor");
         //run retrieval orientation
-       //	yield return StartCoroutine("StartRetrievalOrientation");
+      // 	yield return StartCoroutine("StartRetrievalOrientation");
         //run recall phase
        // yield return StartCoroutine("RunRecall");
         yield return null;
