@@ -12,9 +12,16 @@ public class MathQuestionScript : MonoBehaviour {
 	public Material greenMat;
 	public Material redMat;
 
+	public AudioClip correctSound;
+	public AudioClip wrongSound;
+
+
+	private AudioSource mySource;
     bool shouldDestroy = false;
     // Use this for initialization
     void Start () {
+
+		mySource = gameObject.GetComponent<AudioSource> ();
 	}
 	
 	// Update is called once per frame
@@ -56,6 +63,7 @@ public class MathQuestionScript : MonoBehaviour {
         if (!shouldDestroy)
         {
 			ChangeMaterial (0);
+			mySource.PlayOneShot (correctSound);
 			yield return new WaitForSeconds(0.75f);
 			StartCoroutine ("BeyondCamera");
          //   Destroy(gameObject);
@@ -67,6 +75,7 @@ public class MathQuestionScript : MonoBehaviour {
         if (!shouldDestroy)
         {
 			ChangeMaterial (1);
+			mySource.PlayOneShot (wrongSound);
 			yield return new WaitForSeconds(0.75f);
 			StartCoroutine ("BeyondCamera");
          //   Destroy(gameObject);
