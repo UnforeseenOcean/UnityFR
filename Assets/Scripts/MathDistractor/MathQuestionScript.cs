@@ -48,7 +48,7 @@ public class MathQuestionScript : MonoBehaviour {
 		Debug.Log ("trying to go beyond camera");
 		float timer = 0f;
 		float timePercent = 0f;
-		while(timer< 1f)
+		while(timer< 1f && !shouldDestroy)
 		{
 			timer += Time.deltaTime;
 			timePercent = timer / 1f;
@@ -77,7 +77,7 @@ public class MathQuestionScript : MonoBehaviour {
 			ChangeMaterial (1);
 			mySource.PlayOneShot (wrongSound);
 			yield return new WaitForSeconds(0.75f);
-			StartCoroutine ("BeyondCamera");
+                StartCoroutine ("BeyondCamera");
          //   Destroy(gameObject);
         }
         yield return null;
