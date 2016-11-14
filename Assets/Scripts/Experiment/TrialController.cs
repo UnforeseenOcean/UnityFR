@@ -140,7 +140,7 @@ public class TrialController : MonoBehaviour {
         //run countdown
         yield return StartCoroutine("PlayCountdown");
 		//run word orientation
-		yield return StartCoroutine("StartWordOrientation");
+	    yield return StartCoroutine("StartWordOrientation");
         //run the word encoding phase
         yield return StartCoroutine("RunWordEncoding");
         //run math distractor phase
