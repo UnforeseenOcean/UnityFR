@@ -99,7 +99,14 @@ public class MathDistractor : MonoBehaviour
 		gameObject.GetComponent<Camera>().enabled = false;
             if(currentQuestion!=null)
             {
+            StopCoroutine(currentQuestion.GetComponent<MathQuestionScript>().ApproachCamera());
+            //Destroy(currentQuestion);
                 currentQuestion.GetComponent<MathQuestionScript>().Destroy();
+            GameObject[] allQuestions = GameObject.FindGameObjectsWithTag("MathQuestion");
+            for(int i=0;i<allQuestions.Length;i++)
+            {
+                Destroy(allQuestions[i]);
+            }
                 currentQuestion = null;
 			answeredInt = 0;
 			firstRandInt = 0;
@@ -131,9 +138,27 @@ public class MathDistractor : MonoBehaviour
 		int upperLimit = 10 - firstRandInt;
 		//Debug.Log ("upper limit: " + upperLimit);
 		int secondRandIndex = Random.Range (0,upperLimit-1);
+        Debug.Log("first index: " + firstRandIndex + " and second: " + secondRandIndex);
+        if(firstRandIndex==secondRandIndex)
+        {
+            if (firstRandIndex == 0)
+            {
+                secondRandIndex = 1;
+            }
+            else if (firstRandIndex == numbers.Count - 1)
+            {
+                secondRandIndex = numbers.Count - 2;
+            }
+            else
+                secondRandIndex = firstRandIndex + 1;
+        }
 		secondRandInt = numbers [secondRandIndex];
-		numbers.RemoveAt (firstRandIndex);
-		numbers.RemoveAt (secondRandIndex);
+        /*
+        if(numbers.Count > firstRandIndex)
+            numbers.RemoveAt(firstRandIndex);
+        if(numbers.Count>secondRandIndex)
+            numbers.RemoveAt(secondRandIndex);
+       */
 		//Debug.Log ("removing " + secondRandInt + " at index " + secondRandIndex);
 		correctAnswer = firstRandInt + secondRandInt;
 
@@ -186,13 +211,18 @@ public class MathDistractor : MonoBehaviour
     {
 		//Debug.Log(firstRandInt + " and " + secondRandInt);
         correctAnswer = firstRandInt + secondRandInt;
-		//Debug.Log ("correct answer: " + correctAnswer);
-		if (answeredInt == correctAnswer) {
-			yield return StartCoroutine (currentQuestion.GetComponent<MathQuestionScript> ().CorrectAnswer ());
-		} else {
-			yield return StartCoroutine(currentQuestion.GetComponent<MathQuestionScript> ().WrongAnswer ());
-		}
-
+        //Debug.Log ("correct answer: " + correctAnswer);
+        if (currentQuestion != null)
+        {
+            if (answeredInt == correctAnswer)
+            {
+                yield return StartCoroutine(currentQuestion.GetComponent<MathQuestionScript>().CorrectAnswer());
+            }
+            else
+            {
+                yield return StartCoroutine(currentQuestion.GetComponent<MathQuestionScript>().WrongAnswer());
+            }
+        }
         yield return null;
     }
 
@@ -236,7 +266,6 @@ public class MathDistractor : MonoBehaviour
 	void CreateAnswer(int answer)
 	{
 		answeredInt = answer;
-		answerKeyPressed = true;
 		if(currentQuestion!=null)
 		{
 			Vector3 answerPos = currentQuestion.transform.GetChild (2).position;
@@ -246,7 +275,9 @@ public class MathDistractor : MonoBehaviour
 			//StartCoroutine(currentQuestion.GetComponent<MathQuestionScript> ().BeyondCamera ());
 
 		}
-	}
+
+        answerKeyPressed = true;
+    }
 
 	/*
 	void InstantiateMathBlock()

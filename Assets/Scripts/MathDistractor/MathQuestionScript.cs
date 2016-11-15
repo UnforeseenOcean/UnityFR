@@ -65,7 +65,8 @@ public class MathQuestionScript : MonoBehaviour {
 			ChangeMaterial (0);
 			mySource.PlayOneShot (correctSound);
 			yield return new WaitForSeconds(0.75f);
-			StartCoroutine ("BeyondCamera");
+            if (!shouldDestroy)
+                StartCoroutine ("BeyondCamera");
          //   Destroy(gameObject);
         }
         yield return null;
@@ -77,6 +78,7 @@ public class MathQuestionScript : MonoBehaviour {
 			ChangeMaterial (1);
 			mySource.PlayOneShot (wrongSound);
 			yield return new WaitForSeconds(0.75f);
+            if (!shouldDestroy)
                 StartCoroutine ("BeyondCamera");
          //   Destroy(gameObject);
         }
@@ -84,13 +86,16 @@ public class MathQuestionScript : MonoBehaviour {
     }
 
 	void ChangeMaterial(int answerStatus) //0 for correct, 1 for wrong
-	{
-		if (answerStatus == 0) {
-			for (int i = 3; i <= 7; i++) {
+    {
+        int childCap = transform.childCount - 1;
+        if (answerStatus == 0) {
+			for (int i = 3; i <= childCap; i++) {
+                if(!shouldDestroy)
 				transform.GetChild (i).GetChild(0).GetChild(1).GetComponent<Renderer> ().material = greenMat;
 			}
 		} else {
-			for (int i = 3; i <= 7; i++) {
+			for (int i = 3; i <= childCap; i++) {
+                if(!shouldDestroy)
 				transform.GetChild (i).GetChild(0).GetChild(1).GetComponent<Renderer> ().material = redMat;
 			}
 		}

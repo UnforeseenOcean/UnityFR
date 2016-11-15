@@ -32,6 +32,7 @@ public class RoadBuilder : EditorWindow
         if (GUILayout.Button("Create Objects"))
         {
             SpawnObjects();
+            
         }
     }
 
